@@ -1,4 +1,3 @@
-const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const app = express();
@@ -25,10 +24,8 @@ const addMsgToRequest = function (req, res, next) {
   
 }
 
-app.use(
-  cors({origin: 'http://localhost:3000'})
-);
-app.use('/read/usernames', addMsgToRequest);
+app.use(cors({origin: 'http://localhost:3000'}));
+app.use(addMsgToRequest);
 
 app.get('/read/usernames', (req, res) => {
   let usernames = req.users.map(function(user) {
@@ -37,9 +34,19 @@ app.get('/read/usernames', (req, res) => {
   res.send(usernames);
 });
 
+app.get('/read/username/:name', (req, res) => {
+  const { name } = req.params;
+  const user = req.users.find(user => user.username === name);
+  if (user) {
+    res.send({ username: user.username, email: user.email });
+  } else {
+    res.status(404).json({ error: 'User not found' });
+  }
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/write/adduser', addMsgToRequest);
+//app.use('/write/adduser', addMsgToRequest);
 
 app.post('/write/adduser', (req, res) => {
   let newuser = req.body;
